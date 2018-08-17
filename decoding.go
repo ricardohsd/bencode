@@ -83,3 +83,46 @@ func parseStringLength(v string) (int, int, error) {
 
 	return length, digits + 1, nil
 }
+
+func decodeList(v string) ([]interface{}, int, error) {
+	buff := []interface{}{}
+	length := len(v)
+
+	pos := 1
+	bytesRead := 2
+
+	if len(v) == 1 {
+		return buff, 0, fmt.Errorf("empty list")
+	}
+
+	for {
+		if pos >= length {
+			break
+		}
+
+		switch rune(v[pos]) {
+		case 'i':
+			str, btr, err := decodeInt(v[pos:])
+			if err != nil {
+				return nil, bytesRead, err
+			}
+			buff = append(buff, str)
+
+			bytesRead += btr
+			pos = pos + btr
+		case 'e':
+			return buff, bytesRead, nil
+		default:
+			str, btr, err := decodeBytes(v[pos:])
+			if err != nil {
+				return nil, bytesRead, err
+			}
+			buff = append(buff, string(str))
+			bytesRead += btr
+
+			pos = pos + btr
+		}
+	}
+
+	return buff, bytesRead, nil
+}

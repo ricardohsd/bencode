@@ -110,3 +110,47 @@ func TestString(t *testing.T) {
 		})
 	}
 }
+
+func TestList(t *testing.T) {
+	testCases := []struct {
+		input    string
+		byteSize int
+		expected []interface{}
+		err      error
+	}{
+		{
+			input:    "l",
+			byteSize: 0,
+			expected: []interface{}{},
+			err:      fmt.Errorf("empty list"),
+		},
+		{
+			input:    "l5",
+			byteSize: 2,
+			expected: []interface{}(nil),
+			err:      fmt.Errorf("empty string"),
+		},
+		{
+			input:    "l5:ItemA5:ItemBe",
+			byteSize: 16,
+			expected: []interface{}{"ItemA", "ItemB"},
+		},
+		{
+			input:    "l4:spami42ee",
+			byteSize: 12,
+			expected: []interface{}{"spam", int64(42)},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.input, func(t *testing.T) {
+			result, bytesRead, err := decodeList(tc.input)
+			if err != nil {
+				assert.Equal(t, err.Error(), tc.err.Error())
+			}
+
+			assert.Equal(t, tc.byteSize, bytesRead)
+			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
