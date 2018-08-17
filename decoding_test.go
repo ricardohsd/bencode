@@ -58,3 +58,49 @@ func TestInteger(t *testing.T) {
 		})
 	}
 }
+
+func TestString(t *testing.T) {
+	testCases := []struct {
+		input    string
+		byteSize int
+		expected string
+		err      error
+	}{
+		{
+			input:    "7:",
+			byteSize: 0,
+			expected: "",
+			err:      fmt.Errorf("empty string"),
+		},
+		{
+			input:    "8",
+			byteSize: 0,
+			expected: "",
+			err:      fmt.Errorf("empty string"),
+		},
+		{
+			input:    "8:johndoe",
+			byteSize: 0,
+			expected: "",
+			err:      fmt.Errorf("invalid string length"),
+		},
+		{
+			input:    "7:johndoe",
+			byteSize: 9,
+			expected: "johndoe",
+			err:      nil,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.input, func(t *testing.T) {
+			result, bytesRead, err := decodeBytes(tc.input)
+			if err != nil {
+				assert.Equal(t, err.Error(), tc.err.Error())
+			}
+
+			assert.Equal(t, tc.byteSize, bytesRead)
+			assert.Equal(t, tc.expected, string(result))
+		})
+	}
+}
