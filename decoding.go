@@ -7,6 +7,7 @@ import (
 )
 
 var endChar = "e"
+var stringLimiter = ":"
 
 func decodeInt(v string) (int64, int, error) {
 	buff := bytes.Buffer{}
@@ -38,7 +39,7 @@ func decodeInt(v string) (int64, int, error) {
 func decodeBytes(v string) ([]byte, int, error) {
 	buff := bytes.Buffer{}
 
-	length, err := strconv.Atoi(string(v[0]))
+	length, prefixDigits, err := parseStringLength(v)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -47,17 +48,38 @@ func decodeBytes(v string) ([]byte, int, error) {
 		return nil, 0, fmt.Errorf("empty string")
 	}
 
-	if length > len(v[2:]) {
+	if length > len(v[prefixDigits:]) {
 		return nil, 0, fmt.Errorf("invalid string length")
 	}
 
-	for _, b := range v[2 : length+2] {
+	for _, b := range v[prefixDigits : length+prefixDigits] {
 		buff.WriteRune(b)
 	}
 
 	bt := buff.Bytes()
 
-	bytesRead := buff.Len() + 2
+	bytesRead := buff.Len() + prefixDigits
 
 	return bt, bytesRead, nil
+}
+
+func parseStringLength(v string) (int, int, error) {
+	lenBuff := bytes.Buffer{}
+
+	for i := 0; i < len(v); i++ {
+		if string(v[i]) == stringLimiter {
+			break
+		}
+
+		lenBuff.WriteByte(v[i])
+	}
+
+	digits := lenBuff.Len()
+
+	length, err := strconv.Atoi(lenBuff.String())
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return length, digits + 1, nil
 }

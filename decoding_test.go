@@ -90,6 +90,12 @@ func TestString(t *testing.T) {
 			expected: "johndoe",
 			err:      nil,
 		},
+		{
+			input:    "13:creation date",
+			byteSize: 16,
+			expected: "creation date",
+			err:      nil,
+		},
 	}
 
 	for _, tc := range testCases {
