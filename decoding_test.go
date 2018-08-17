@@ -1,39 +1,60 @@
 package bencode
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
 func TestInteger(t *testing.T) {
-	str := "ie"
-	result, bytesRead, err := decodeInt(str)
-	assert.Equal(t, err.Error(), "empty integer")
-	assert.Equal(t, 0, bytesRead)
-	assert.Equal(t, int64(0), result)
+	testCases := []struct {
+		input          string
+		byteSize       int
+		expectedNumber int64
+		err            error
+	}{
+		{
+			input:          "ie",
+			byteSize:       0,
+			expectedNumber: 0,
+			err:            fmt.Errorf("empty integer"),
+		},
+		{
+			input:          "iaaae",
+			byteSize:       0,
+			expectedNumber: 0,
+			err:            fmt.Errorf("not an integer"),
+		},
+		{
+			input:          "i0e",
+			byteSize:       3,
+			expectedNumber: 0,
+			err:            nil,
+		},
+		{
+			input:          "i59616e",
+			byteSize:       7,
+			expectedNumber: 59616,
+			err:            nil,
+		},
+		{
+			input:          "i-59616e",
+			byteSize:       8,
+			expectedNumber: -59616,
+			err:            nil,
+		},
+	}
 
-	str = "iaaae"
-	result, bytesRead, err = decodeInt(str)
-	assert.Equal(t, err.Error(), "not an integer")
-	assert.Equal(t, 0, bytesRead)
-	assert.Equal(t, int64(0), result)
+	for _, tc := range testCases {
+		t.Run(tc.input, func(t *testing.T) {
+			result, bytesRead, err := decodeInt(tc.input)
+			if err != nil {
+				assert.Equal(t, err.Error(), tc.err.Error())
+			}
 
-	str = "i0e"
-	result, bytesRead, err = decodeInt(str)
-	assert.Nil(t, err)
-	assert.Equal(t, 3, bytesRead)
-	assert.Equal(t, int64(0), result)
-
-	str = "i59616e"
-	result, bytesRead, err = decodeInt(str)
-	assert.Nil(t, err)
-	assert.Equal(t, 7, bytesRead)
-	assert.Equal(t, int64(59616), result)
-
-	str = "i-59616e"
-	result, bytesRead, err = decodeInt(str)
-	assert.Nil(t, err)
-	assert.Equal(t, 8, bytesRead)
-	assert.Equal(t, int64(-59616), result)
+			assert.Equal(t, tc.byteSize, bytesRead)
+			assert.Equal(t, tc.expectedNumber, result)
+		})
+	}
 }
