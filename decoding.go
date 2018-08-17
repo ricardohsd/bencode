@@ -89,29 +89,34 @@ func decodeList(v string) ([]interface{}, int, error) {
 	length := len(v)
 
 	pos := 1
-	bytesRead := 2
+	bytesRead := 1
 
 	if len(v) == 1 {
 		return buff, 0, fmt.Errorf("empty list")
 	}
 
 	for {
+		if pos == length && string(v[pos-1]) != endChar {
+			return nil, 0, fmt.Errorf("malformed list")
+		}
+
 		if pos >= length {
 			break
 		}
 
-		switch rune(v[pos]) {
-		case 'i':
+		switch string(v[pos]) {
+		case "e":
+			bytesRead++
+			return buff, bytesRead, nil
+		case "i":
 			str, btr, err := decodeInt(v[pos:])
 			if err != nil {
 				return nil, bytesRead, err
 			}
 			buff = append(buff, str)
-
 			bytesRead += btr
+
 			pos = pos + btr
-		case 'e':
-			return buff, bytesRead, nil
 		default:
 			str, btr, err := decodeBytes(v[pos:])
 			if err != nil {

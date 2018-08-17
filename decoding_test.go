@@ -126,7 +126,7 @@ func TestList(t *testing.T) {
 		},
 		{
 			input:    "l5",
-			byteSize: 2,
+			byteSize: 1,
 			expected: []interface{}(nil),
 			err:      fmt.Errorf("empty string"),
 		},
@@ -139,6 +139,12 @@ func TestList(t *testing.T) {
 			input:    "l4:spami42ee",
 			byteSize: 12,
 			expected: []interface{}{"spam", int64(42)},
+		},
+		{
+			input:    "l5:ItemA5:ItemB",
+			byteSize: 0,
+			expected: []interface{}(nil),
+			err:      fmt.Errorf("malformed list"),
 		},
 	}
 
