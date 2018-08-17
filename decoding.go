@@ -12,6 +12,10 @@ var stringLimiter = ":"
 func decodeInt(v string) (int64, int, error) {
 	buff := bytes.Buffer{}
 
+	if string(v[len(v)-1]) != endChar {
+		return 0, 0, fmt.Errorf("malformed integer")
+	}
+
 	for _, b := range v[1:] {
 		if string(b) == endChar {
 			break

@@ -27,6 +27,12 @@ func TestInteger(t *testing.T) {
 			err:            fmt.Errorf("not an integer"),
 		},
 		{
+			input:          "i59616",
+			byteSize:       0,
+			expectedNumber: 0,
+			err:            fmt.Errorf("malformed integer"),
+		},
+		{
 			input:          "i0e",
 			byteSize:       3,
 			expectedNumber: 0,
