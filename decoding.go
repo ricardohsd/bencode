@@ -135,3 +135,80 @@ func decodeList(v string) ([]interface{}, int, error) {
 
 	return buff, bytesRead, nil
 }
+
+func decodeDict(v string) (map[string]interface{}, int, error) {
+	buff := make(map[string]interface{})
+	length := len(v)
+
+	// pos and bytesRead start as 1 because it skips the first char (d)
+	pos := 1
+	bytesRead := 1
+
+	if length == 1 {
+		return nil, 0, fmt.Errorf("malformed dictionary")
+	}
+
+	for {
+		if pos >= length {
+			return nil, 0, fmt.Errorf("malformed dictionary")
+		}
+
+		if string(v[pos]) == endChar {
+			bytesRead++
+			return buff, bytesRead, nil
+		}
+
+		key, btr, err := decodeBytes(v[pos:])
+		if err != nil {
+			return nil, bytesRead, err
+		}
+
+		pos = pos + btr
+		bytesRead += btr
+
+		switch string(v[pos]) {
+		case "i":
+			str, btr, err := decodeInt(v[pos:])
+			if err != nil {
+				return nil, 0, err
+			}
+
+			pos = pos + btr
+			bytesRead += btr
+
+			buff[string(key)] = fmt.Sprintf("%v", str)
+		case "l":
+			list, btr, err := decodeList(v[pos : length-1])
+			if err != nil {
+				return nil, 0, err
+			}
+
+			pos = pos + btr
+			bytesRead += btr
+
+			buff[string(key)] = list
+		case "d":
+			dic, btr, err := decodeDict(v[pos : len(v)-1])
+			if err != nil {
+				return nil, 0, err
+			}
+
+			pos = pos + btr
+			bytesRead += btr
+
+			buff[string(key)] = dic
+		default:
+			str, btr, err := decodeBytes(v[pos:])
+			if err != nil {
+				return nil, 0, err
+			}
+
+			pos = pos + btr
+			bytesRead += btr
+
+			buff[string(key)] = string(str)
+		}
+	}
+
+	return buff, bytesRead, nil
+}
